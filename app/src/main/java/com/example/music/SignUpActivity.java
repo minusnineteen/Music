@@ -41,19 +41,19 @@ public class SignUpActivity extends AppCompatActivity {
 
                 if (password1.equals(confirmPassword)) {
                     // mật khẩu trùng khớp
-                    //  đăng ký
+
                     DatabaseHelper databaseHelper = new DatabaseHelper(SignUpActivity.this);
                     long newRowId = databaseHelper.addUser(username1, password1);
 
                     if (newRowId != -1) {
-                        Toast.makeText(SignUpActivity.this, "Register successful", Toast.LENGTH_SHORT).show();
-
+                        Toast.makeText(SignUpActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
+                        finish();
                     } else {
-                        Toast.makeText(SignUpActivity.this, "Register failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SignUpActivity.this, "Đăng ký thất bại", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    //  không trùng khớp
-                    Toast.makeText(SignUpActivity.this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+
+                    Toast.makeText(SignUpActivity.this, "Mật khẩu không trùng khớp", Toast.LENGTH_SHORT).show();
                 }
             }
         });

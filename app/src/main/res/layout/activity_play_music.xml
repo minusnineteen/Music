@@ -7,11 +7,11 @@
     tools:context=".PlayMusicActivity">
 
     <TextView
-        android:id="@+id/tvSong"
+        android:id="@+id/tv_SongName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Tên bài hát"
-        android:textSize="30dp"/>
+        android:textSize="30sp"/>
 
     <Button
         android:id="@+id/btnPrev"

@@ -25,6 +25,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_SONG_GENRE = "genre";
     private static final String COLUMN_SONG_PATH = "path";
 
+    // Bảng thể loại nhạc
+    private static final String TABLE_GENRES = "genres";
+    private static final String COLUMN_GENRE_ID = "id";
+    private static final String COLUMN_GENRE_NAME = "name";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -41,11 +46,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_SONG_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COLUMN_SONG_TITLE + " TEXT,"
                 + COLUMN_SONG_ARTIST + " TEXT,"
-                + COLUMN_SONG_GENRE + " TEXT,"
+                + COLUMN_SONG_GENRE + " INTEGER,"
                 + COLUMN_SONG_PATH + " INTEGER)";
         db.execSQL(createSongsTableQuery);
 
-
+        String createGenresTableQuery = "CREATE TABLE " + TABLE_GENRES + "("
+                + COLUMN_GENRE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COLUMN_GENRE_NAME + " TEXT)";
+        db.execSQL(createGenresTableQuery);
     }
 
 
@@ -95,12 +103,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (isSongExist(title, artist)) {
             return -1;
         }
-        SQLiteDatabase db = this.getWritableDatabase();
 
+
+        int genreId =  getGenreIdByName(genre);
+        if (genreId == -1)
+        {
+            genreId = addGenre(genre);
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_SONG_TITLE, title);
         values.put(COLUMN_SONG_ARTIST, artist);
-        values.put(COLUMN_SONG_GENRE, genre);
+        values.put(COLUMN_SONG_GENRE, genreId);
         values.put(COLUMN_SONG_PATH, path);
 
         long newRowId = db.insert(TABLE_SONGS, null, values);
@@ -120,7 +134,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 s.setId(c.getInt(0));
                 s.setTitle(c.getString(1));
                 s.setArtist(c.getString(2));
-                s.setGenre(c.getString(3));
+                int genreId = c.getInt(c.getColumnIndexOrThrow(COLUMN_SONG_GENRE));
+                Genre genre = getGenreById(genreId);
+                s.setGenre(genre);
                 s.setPath(c.getInt(4));
 
                 songList.add(s);
@@ -145,6 +161,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return isExist;
     }
+    public boolean isGenreExist(String name) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selection = COLUMN_GENRE_NAME + " = ?";
+        String[] selectionArgs = {name};
+
+        Cursor cursor = db.query(TABLE_GENRES, null, selection, selectionArgs, null, null, null);
+
+        boolean isExist = cursor.getCount() > 0;
+
+        cursor.close();
+        db.close();
+
+        return isExist;
+    }
 
 
     public void deleteAllSongs() {
@@ -152,5 +183,72 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_SONGS, null, null);
         db.close();
     }
+
+    //THỂ LOẠI NHẠC
+    public int addGenre(String name) {
+        if (isGenreExist(name)) {
+            return -1;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_GENRE_NAME, name);
+        return (int) db.insert(TABLE_GENRES, null, values);
+    }
+
+    public int getGenreIdByName(String name) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT " + COLUMN_GENRE_ID + " FROM " + TABLE_GENRES
+                + " WHERE " + COLUMN_GENRE_NAME + " = ?";
+
+        Cursor c = db.rawQuery(query, new String[]{name});
+        int genreId = -1;
+        if (c.moveToFirst()) {
+            genreId = c.getInt(c.getColumnIndexOrThrow(COLUMN_GENRE_ID));
+        }
+        c.close();
+        return genreId;
+    }
+
+    private Genre getGenreById(int genreId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] projection = {COLUMN_GENRE_ID, COLUMN_GENRE_NAME};
+        String selection = COLUMN_GENRE_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(genreId)};
+        Cursor cursor = db.query(TABLE_GENRES, projection, selection, selectionArgs, null, null, null);
+        Genre genre = null;
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_GENRE_ID));
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GENRE_NAME));
+            genre = new Genre(id, name);
+            cursor.close();
+        }
+        return genre;
+    }
+
+    public List<Genre> getAllGenres() {
+        List<Genre> genreList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] columns = {COLUMN_GENRE_ID, COLUMN_GENRE_NAME};
+        Cursor cursor = db.query(TABLE_GENRES, columns, null, null, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_GENRE_ID));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GENRE_NAME));
+
+                Genre genre = new Genre();
+                genre.setId(id);
+                genre.setName(name);
+
+                genreList.add(genre);
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        }
+
+        return genreList;
+    }
+
 
 }

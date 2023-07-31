@@ -2,6 +2,7 @@ package com.example.music;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
@@ -31,7 +32,7 @@ public class PlayMusicActivity extends AppCompatActivity {
             play = (Button) findViewById(R.id.btnPlay);
             stop = (Button) findViewById(R.id.btnStop);
             next = (Button) findViewById(R.id.btnNext);
-            title = (TextView) findViewById(R.id.tvSong);
+            title = (TextView) findViewById(R.id.tv_SongName);
             start = (TextView) findViewById(R.id.tvStart);
             end = (TextView) findViewById(R.id.tvEnd);
             sb = (SeekBar) findViewById(R.id.seekBar);
@@ -46,6 +47,13 @@ public class PlayMusicActivity extends AppCompatActivity {
 //                    title.setText(a.get(pos).getTitle());
 //                }
 //            });
+
+//        Intent intent = getIntent();
+//        if (intent != null) {
+//            Song song = (Song) intent.getSerializableExtra("song");
+//            title.setText(song.getTitle());
+//        }
+
 
         }
 
